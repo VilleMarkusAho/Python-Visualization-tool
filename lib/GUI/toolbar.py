@@ -1,18 +1,20 @@
 import mplcursors  # 'pip install git+https://github.com/anntzer/mplcursors'.
 import pandas as pd  # 'pip install pandas'
 from matplotlib.backend_tools import ToolToggleBase
+
 from lib.GUI.readfile import *
+
 
 # Custom toolbar button for reading excel files.
 class OpenFileButton(ToolToggleBase):
     description = 'Choose excel file to read'
-    
+
     def __init__(self, *args, figure, diagram, toolbar, **kwargs):
         self.toolbar = toolbar
         self.fig = figure
         self.diagram = diagram
         super().__init__(*args, **kwargs)
-    
+
     def trigger(self, *args, **kwargs):
         # Executed when OpenFileButton is pressed.
         # Used to draw lines and configure charts.
@@ -20,7 +22,6 @@ class OpenFileButton(ToolToggleBase):
 
 
 def draw_plot(fig, diagram, toolbar):
-
     url = filepath()
 
     if url != '':
@@ -66,93 +67,96 @@ def draw_plot(fig, diagram, toolbar):
 
         except IndexError:
             error_message('Index out of range ERROR',
-            'Excel taulukosta puuttuu sarake')
+                          'Excel taulukosta puuttuu sarake')
             return
 
         except ValueError:
             error_message('Invalid value ERROR',
-            'Sarakkeiden rivit sisältävät huonoja arvoja')
-        return
- 
-    # Legend info configurations
-    leg = diagram.legend(bbox_to_anchor=(1.12, 1), loc='upper right', fancybox=True, shadow=True, title='Click to toggle\n line on/off\n')
-    lined = dict()
+                          'Sarakkeiden rivit sisältävät huonoja arvoja')
+            return
 
-    for legline, origline in zip(leg.get_lines(), lines):
-        legline.set_picker(5) # 5 pts tolerance
-        lined[legline] = origline
+        # Legend info configurations
+        leg = diagram.legend(bbox_to_anchor=(1.12, 1), loc='upper right', fancybox=True, shadow=True, title='Click to '
+                                                                                                            'toggle\n'
+                                                                                                            ' line '
+                                                                                                            'on/off\n')
+        lined = dict()
 
-    # Event triggered when clicking legend lines.
-    def onpick(event):
-        # on the pick event, find the original line
-        # corresponding to the legend proxy line,
-        # and toggle the visibility.
-        try:
-            legline = event.artist
-            origline = lined[legline]
-            vis = not origline.get_visible()
-            origline.set_visible(vis)
+        for legline, origline in zip(leg.get_lines(), lines):
+            legline.set_picker(5)  # 5 pts tolerance
+            lined[legline] = origline
 
-            # Change the alpha on the line in the
-            # legend so we can see what lines have
-            # been toggled.
-            if vis:
-                legline.set_alpha(1.0)
-            else:
-                legline.set_alpha(0.2)
+        # Event triggered when clicking legend lines.
+        def onpick(event):
+            # on the pick event, find the original line
+            # corresponding to the legend proxy line,
+            # and toggle the visibility.
+            try:
+                legline = event.artist
+                origline = lined[legline]
+                vis = not origline.get_visible()
+                origline.set_visible(vis)
+
+                # Change the alpha on the line in the
+                # legend so we can see what lines have
+                # been toggled.
+                if vis:
+                    legline.set_alpha(1.0)
+                else:
+                    legline.set_alpha(0.2)
                 fig.canvas.draw()
-                
-        except KeyError:
-            pass
-    
-    fig.canvas.mpl_connect('pick_event', onpick)
 
-    # adds grid to the canvas.
-    diagram.grid()
+            except KeyError:
+                pass
 
-    # adds tooltip to the cursor.
-    # tooltip shows information about artist when
-    # hovering the cursor over it.
-    tooltip = mplcursors.cursor(diagram, hover=2)
- 
-    # this tooltip is used for setting markers to the
-    # plot lines.
-    marker = mplcursors.cursor(diagram, multiple=True)
- 
-    # tooltip configurations
-    @tooltip.connect("add")
-    def _(sel):
-        # Sets background color of tooltips.
-        sel.annotation.get_bbox_patch().set(fc="white", alpha=1)
-        # Information showed in the tooltip.
-        sel.annotation.set_text(
-        # shows values in 10 and 3 decimal
-        # accuracy.
-        f'{sel.artist.get_label()}\n'
-        f'{df.iloc[:, 1].name.strip()}:'
-        f' {sel.annotation.xy[1]:.10f}'
-        f'\n{df.iloc[:, 0].name.strip()}:'
-        f' {sel.annotation.xy[0]:.3f}')
+        fig.canvas.mpl_connect('pick_event', onpick)
 
-    # second tooltip for tagging points of the plot.
-    @marker.connect("add")
-    def _(sel):
-        sel.annotation.get_bbox_patch().set(fc="white", alpha=1)
-        sel.annotation.set_text(
-        f'{sel.artist.get_label()}\n'
-        f'{df.iloc[:, 1].name.strip()}:'
-        f' {sel.annotation.xy[1]:.10f}\n'
-        f'{df.iloc[:, 0].name.strip()}:'
-        f' {sel.annotation.xy[0]:.3f}')
+        # adds grid to the canvas.
+        diagram.grid()
 
-    fig.canvas.draw()
+        # adds tooltip to the cursor.
+        # tooltip shows information about artist when
+        # hovering the cursor over it.
+        tooltip = mplcursors.cursor(diagram, hover=2)
 
-    # functions below is for resetting view
-    # positions memory stack
-    toolbar.update()
-    tm = fig.canvas.manager.toolmanager
-    reset = tm.get_tool('viewpos')
-    reset.clear(fig)
-    reset.add_figure(fig)
-    reset.push_current()
-    reset.update_view()
+        # this tooltip is used for setting markers to the
+        # plot lines.
+        marker = mplcursors.cursor(diagram, multiple=True)
+
+        # tooltip configurations
+        @tooltip.connect("add")
+        def _(sel):
+            # Sets background color of tooltips.
+            sel.annotation.get_bbox_patch().set(fc="white", alpha=1)
+            # Information showed in the tooltip.
+            sel.annotation.set_text(
+                # shows values in 10 and 3 decimal
+                # accuracy.
+                f'{sel.artist.get_label()}\n'
+                f'{df.iloc[:, 1].name.strip()}:'
+                f' {sel.annotation.xy[1]:.10f}'
+                f'\n{df.iloc[:, 0].name.strip()}:'
+                f' {sel.annotation.xy[0]:.3f}')
+
+        # second tooltip for tagging points of the plot.
+        @marker.connect("add")
+        def _(sel):
+            sel.annotation.get_bbox_patch().set(fc="white", alpha=1)
+            sel.annotation.set_text(
+                f'{sel.artist.get_label()}\n'
+                f'{df.iloc[:, 1].name.strip()}:'
+                f' {sel.annotation.xy[1]:.10f}\n'
+                f'{df.iloc[:, 0].name.strip()}:'
+                f' {sel.annotation.xy[0]:.3f}')
+
+        fig.canvas.draw()
+
+        # functions below is for resetting view
+        # positions memory stack
+        toolbar.update()
+        tm = fig.canvas.manager.toolmanager
+        reset = tm.get_tool('viewpos')
+        reset.clear(fig)
+        reset.add_figure(fig)
+        reset.push_current()
+        reset.update_view()

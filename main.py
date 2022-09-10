@@ -1,7 +1,9 @@
 import matplotlib as mpl  # pip install matplotlib==3.5.1
 import matplotlib.pyplot as plt
-from lib.GUI.toolbar import OpenFileButton
 import os
+
+from lib.GUI.toolbar import OpenFileButton
+
 # Also, install openpyxl package with 'pip install openpyxl'.
 
 mpl.rcParams["toolbar"] = 'toolmanager'

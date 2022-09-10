@@ -1,2 +1,3 @@
 venv/
 lib/GUI/__pycache__
+.idea/
