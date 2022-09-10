@@ -20,7 +20,9 @@ class OpenFileButton(ToolToggleBase):
 
 
 def draw_plot(fig, diagram, toolbar):
+
     url = filepath()
+
     if url != '':
         # clear axis.
         diagram.clear()
@@ -99,6 +101,7 @@ def draw_plot(fig, diagram, toolbar):
             else:
                 legline.set_alpha(0.2)
                 fig.canvas.draw()
+                
         except KeyError:
             pass
     
